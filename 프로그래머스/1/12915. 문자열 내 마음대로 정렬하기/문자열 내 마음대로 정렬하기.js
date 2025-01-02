@@ -1,12 +1,11 @@
 function solution(strings, n) {
-    var answer = [];
-    strings.forEach(x => {
-        answer.push(`${x[n]}${x}`);
-    });
-    answer = answer.sort();
-    let jjinDap = [];
-    for (const value of answer.values()){
-        jjinDap.push(value.slice(1,));
+    let answer = new Map();
+    for (const value of strings.values()){
+        answer.set(value[n], value);
     }
-    return jjinDap;
+    let final_dap = [];
+    for (const key of [...answer.keys()].sort()){
+        final_dap.push(answer.get(key));
+    }
+    return final_dap;
 }
