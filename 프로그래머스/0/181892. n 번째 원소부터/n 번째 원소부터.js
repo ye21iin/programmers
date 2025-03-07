@@ -1,0 +1,1 @@
+function solution(l, n){return l.slice(n-1);}
