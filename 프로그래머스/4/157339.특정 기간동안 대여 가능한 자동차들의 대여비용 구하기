@@ -1,3 +1,4 @@
+-- CTE 사용 (FEE 계산을 재사용)
 WITH CalculatedFee AS (
     SELECT
         C.CAR_ID,
@@ -6,24 +7,24 @@ WITH CalculatedFee AS (
     FROM
         CAR_RENTAL_COMPANY_CAR C
     JOIN
-        CAR_RENTAL_COMPANY_DISCOUNT_PLAN P ON C.CAR_TYPE = P.CAR_TYPE AND P.DURATION_TYPE = '30일 이상'
+        CAR_RENTAL_COMPANY_DISCOUNT_PLAN P ON C.CAR_TYPE = P.CAR_TYPE AND P.DURATION_TYPE = '30일 이상' -- 타입이 동일한 경우, 30일 이상 plan
     WHERE
-        C.CAR_TYPE IN ('세단', 'SUV')
+        C.CAR_TYPE IN ('세단', 'SUV') -- 차량 타입 필터링
 )
 SELECT
     CF.CAR_ID,
     CF.CAR_TYPE,
     CF.FEE
 FROM
-    CalculatedFee CF
+    CalculatedFee CF -- CTE 재사용
 WHERE
-    CF.FEE BETWEEN 500000 AND 1999999
-    AND NOT EXISTS (
+    CF.FEE BETWEEN 500000 AND 1999999 -- 한달 대여료 기준 필터링
+    AND NOT EXISTS ( -- IN 보다 EXIST에서 조회 성능 개선 가능 / 대여불가능한 리스트에 존재하지 않는 조건
         SELECT 1
         FROM CAR_RENTAL_COMPANY_RENTAL_HISTORY RH
         WHERE RH.CAR_ID = CF.CAR_ID
-          AND RH.START_DATE <= TO_DATE('2022-11-30', 'YYYY-MM-DD')
-          AND RH.END_DATE >= TO_DATE('2022-11-01', 'YYYY-MM-DD')
+          AND RH.START_DATE <= TO_DATE('2022-11-30', 'YYYY-MM-DD') -- 11월 30일 전 대여를 시작하고
+          AND RH.END_DATE >= TO_DATE('2022-11-01', 'YYYY-MM-DD') -- 11월 1일 후에 반납한 경우 대여 불가능
     )
 ORDER BY
-    CF.FEE DESC, CF.CAR_TYPE ASC, CF.CAR_ID DESC;
+    CF.FEE DESC, CF.CAR_TYPE ASC, CF.CAR_ID DESC; -- 명시화
